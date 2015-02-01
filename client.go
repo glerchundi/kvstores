@@ -41,7 +41,7 @@ func (e *Error) String() string {
 		return e.msg
 	}
 
-	msg, found := errCodeToErrMsg[e.errCode]
+	msg, found := errCodeToErrMsg[e.code]
 	if (found) {
 		return msg
 	}

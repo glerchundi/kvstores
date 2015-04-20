@@ -6,42 +6,40 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"strings"
 
 	api "github.com/coreos/go-etcd/etcd"
 )
 
 type EtcdClient struct {
-	addr   string
 	client *api.Client
 }
 
-func NewEtcdClient(addr string, dialTimeout time.Duration) (*EtcdClient, error) {
+func NewEtcdClient(machines []string, cert, certKey string, caKeys string,
+                   dialTimeout time.Duration) (*EtcdClient, error) {
 	var c *api.Client
-	/*
-		var err error
-		if cert != "" && key != "" {
-			c, err = etcd.NewTLSClient(machines, cert, key, caCert)
-			if err != nil {
-				return &Client{c}, err
-			}
-		} else {
-			c = etcd.NewClient(machines)
+	var err error
+
+	// create client, using tls if required
+	if cert != "" && certKey != "" {
+		c, err = api.NewTLSClient(machines, cert, certKey, caKeys)
+		if err != nil {
+			return nil, err
 		}
-	*/
-
-	// machine addresses
-	machines := []string{addr}
-
-	// create custom client
-	c = api.NewClient(machines)
-	if !c.SetCluster(machines) {
-		return nil, errors.New("cannot connect to etcd cluster: " + addr)
+	} else {
+		c = api.NewClient(machines)
 	}
 
 	// configure dial timeout
 	c.SetDialTimeout(dialTimeout)
 
-	return &EtcdClient { addr: addr, client: c }, nil
+	// updates cluster information using the given machine list.
+	success := c.SetCluster(machines)
+	if !success {
+		return nil, errors.New("cannot connect to etcd cluster: " + strings.Join(machines, ","))
+	}
+
+	return &EtcdClient{c}, nil
 }
 
 func (c *EtcdClient) Create(path string, data string) (err *Error) {

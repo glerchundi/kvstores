@@ -1,12 +1,8 @@
 package kvstores
 
 import (
-	"errors"
 	"net"
-	"net/url"
-	"strings"
 	"strconv"
-	"time"
 )
 
 const (
@@ -78,6 +74,7 @@ type Client interface {
 	GetChildren(path string) ([]string, *Error)
 }
 
+/*
 func NewClient(backendUrl string) (Client, error) {
 	// parse url
 	u, err := url.Parse(backendUrl)
@@ -100,3 +97,4 @@ func NewClient(backendUrl string) (Client, error) {
 	// return constructed client
 	return nil, errors.New("Invalid backend")
 }
+*/
